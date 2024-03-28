@@ -31,11 +31,12 @@ public partial class TbPaciente
     [StringLength(15)]
     [Unicode(false)]
     public string Cpf { get; set; }
-
+    [Display(Name = "Data Nascimento")]
     public DateOnly DataNascimento { get; set; }
 
     [StringLength(100)]
     [Unicode(false)]
+    [Display(Name = "Responsavel")]
     public string NomeResponsavel { get; set; }
 
     [Required]
@@ -47,6 +48,7 @@ public partial class TbPaciente
 
     [StringLength(100)]
     [Unicode(false)]
+    [Display(Name = "Endereço")]
     public string Endereco { get; set; }
 
     [StringLength(50)]
@@ -69,14 +71,16 @@ public partial class TbPaciente
 
     [StringLength(30)]
     [Unicode(false)]
+    [Display(Name = "Profissão")]
     public string Profissao { get; set; }
-
+    [Display(Name = "Atleta")]
     public bool? FlgAtleta { get; set; }
-
+    [Display(Name = "Gestante")]
     public bool? FlgGestante { get; set; }
 
     [ForeignKey("IdCidade")]
     [InverseProperty("TbPaciente")]
+    [Display(Name ="Cidade")]
     public virtual TbCidade IdCidadeNavigation { get; set; }
 
     [InverseProperty("IdPacienteNavigation")]

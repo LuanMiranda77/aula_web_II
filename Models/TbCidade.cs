@@ -13,6 +13,7 @@ namespace App_aula_1.Models;
 public partial class TbCidade
 {
     [Key]
+    [Display(Name = "Cidade")]
     public int IdCidade { get; set; }
 
     public int? IdEstado { get; set; }
