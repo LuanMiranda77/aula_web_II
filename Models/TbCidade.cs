@@ -21,6 +21,7 @@ public partial class TbCidade
     [Column("nome")]
     [StringLength(100)]
     [Unicode(false)]
+    [Display(Name = "Cidade")]
     public string Nome { get; set; }
 
     [ForeignKey("IdEstado")]

@@ -12,11 +12,13 @@ namespace App_aula_1.Models;
 public partial class TbTipoAcesso
 {
     [Key]
+    [Display(Name = "Tipo de Acesso")]
     public int IdTipoAcesso { get; set; }
 
     [Required]
     [StringLength(100)]
     [Unicode(false)]
+    [Display(Name = "Acesso")]
     public string Nome { get; set; }
 
     public bool FlagAtivo { get; set; }
