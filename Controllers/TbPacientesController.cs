@@ -7,9 +7,12 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using App_aula_1.Models;
 using System.Data;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace App_aula_1.Controllers
 {
+    [Authorize(Roles = "GerenteGeral, Medico, Nutricionista")]
     public class TbPacientesController : Controller
     {
         private readonly db_aula_webContext _context;
@@ -22,8 +25,24 @@ namespace App_aula_1.Controllers
         // GET: TbPacientes
         public async Task<IActionResult> Index()
         {
-            var db_aula_webContext = _context.TbPaciente.Include(t => t.IdCidadeNavigation);
-            return View(await db_aula_webContext.ToListAsync());
+            // Carregar id de usuario logado
+            string IdUser = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            // Buscar o profissional associado ao usuário logado
+            var profissionalLogado = await _context.TbProfissional.FirstOrDefaultAsync(p => p.IdUser == IdUser);
+
+            if (profissionalLogado == null)
+            {
+                return RedirectToAction("Erro", "Home");
+            }
+
+            //Retorna a lista de paciente por profissional logado
+            var pacientesCadastradosPorProfissional = await _context.TbPaciente
+               .Where(p => _context.TbMedicoPaciente.Any(mp => mp.IdProfissional == profissionalLogado.IdProfissional && mp.IdPaciente == p.IdPaciente))
+               .Include(t => t.IdCidadeNavigation)
+               .ToListAsync();
+
+            return View(pacientesCadastradosPorProfissional);
         }
 
         // GET: TbPacientes/Details/5
@@ -58,13 +77,30 @@ namespace App_aula_1.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Nome,Rg,Cpf,DataNascimento,NomeResponsavel,Sexo,Etnia,Endereco,Bairro,IdCidade,TelResidencial,TelComercial,TelCelular,Profissao,FlgAtleta,FlgGestante")] TbPaciente tbPaciente)
+        public async Task<IActionResult> Create([Bind("Nome,Rg,Cpf,DataNascimento,NomeResponsavel,Sexo,Etnia,Endereco,Bairro,IdCidade,TelResidencial,TelComercial,TelCelular,Profissao,FlgAtleta,FlgGestante")] TbPaciente tbPaciente, TbMedicoPaciente tbMedicoPaciente)
         {
             try { 
                 if (ModelState.IsValid)
                 {
                     _context.Add(tbPaciente);
                     await _context.SaveChangesAsync();
+
+                    // Carregar id de usuario logado
+                    string IdUser = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                    // Buscar o profissional associado ao usuário logado
+                    var profissionalLogado = await _context.TbProfissional.FirstOrDefaultAsync(p => p.IdUser == IdUser);
+
+                    if (profissionalLogado == null)
+                    {
+                        return RedirectToAction("Erro", "Home");
+                    }
+
+                    tbMedicoPaciente.IdProfissional = profissionalLogado.IdProfissional;
+                    tbMedicoPaciente.IdPaciente = tbPaciente.IdPaciente;
+                    _context.Add(tbMedicoPaciente);
+                    await _context.SaveChangesAsync();
+
                     return RedirectToAction(nameof(Index));
                 }
             }

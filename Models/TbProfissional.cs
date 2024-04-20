@@ -75,19 +75,23 @@ public partial class TbProfissional
     [Column("DDD1")]
     [StringLength(2)]
     [Unicode(false)]
+    [Display(Name = "DDD")]
     public string Ddd1 { get; set; }
 
     [Column("DDD2")]
     [StringLength(2)]
     [Unicode(false)]
+    [Display(Name = "DDD")]
     public string Ddd2 { get; set; }
 
     [StringLength(25)]
     [Unicode(false)]
+    [Display(Name = "Telefone")]
     public string Telefone1 { get; set; }
 
     [StringLength(25)]
     [Unicode(false)]
+    [Display(Name = "Telefone de reacdo")]
     public string Telefone2 { get; set; }
 
     [Column(TypeName = "decimal(10, 2)")]

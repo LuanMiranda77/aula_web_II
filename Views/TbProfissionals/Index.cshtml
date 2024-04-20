@@ -5,11 +5,15 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>Index</h1>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
+<h1>Lista</h1>
+@if (User.IsInRole("GerenteGeral"))
+{
+    <p>
+        <a asp-action="Create" class="btn btn-primary">Novo</a>
+    </p>
+}
+
 <table class="table">
     <thead>
         <tr>
@@ -110,8 +114,11 @@
             </td>
             <td>
                     <a asp-action="Edit" asp-route-id="@item.IdProfissional" class="btn btn-primary"><i class="bi bi-pencil-square" title="Editar"></i></a>
-                    <a asp-action="Details" asp-route-id="@item.IdProfissional" class="btn btn-danger"><i class="bi bi-trash" title="Excluir"></i></a>
-                    <a asp-action="Delete" asp-route-id="@item.IdProfissional" class="btn btn-outline-success"><i class="bi bi-unindent" title="Detalhes"></i></a>
+                    <a asp-action="Details" asp-route-id="@item.IdProfissional" class="btn btn-outline-success"><i class="bi bi-border-style" title="Detalhes"></i></a>
+                    @if (User.IsInRole("GerenteGeral") || User.IsInRole("GerenteNutricionista") || User.IsInRole("GerenteMedico"))
+                    {
+                         <a asp-action="Delete" asp-route-id="@item.IdProfissional" class="btn btn-danger"><i class="bi bi-trash" title="Excluir"></i></a>
+                    }
             </td>
         </tr>
 }

@@ -10,15 +10,19 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using System.Runtime.ConstrainedExecution;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 
 namespace App_aula_1.Controllers
 {
-   public enum Plano {
+    public enum Plano
+    {
         MedicoTotal = 1,
-        MedicoParcial =2,
-        Nutricionista =3
+        MedicoParcial = 2,
+        Nutricionista = 3
 
     }
+
+    [Authorize]
     public class TbProfissionalsController : Controller
     {
         private readonly db_aula_webContext _context;
@@ -29,29 +33,87 @@ namespace App_aula_1.Controllers
         }
 
         // GET: TbProfissionals
+        [Authorize(Roles = "GerenteMedico, GerenteNutricionista, GerenteGeral, Medico, Nutricionista")]
         public async Task<IActionResult> Index()
         {
-            //var db_aula_webContext = _context.TbProfissional.Include(t => t.IdCidadeNavigation).Include(t => t.IdContratoNavigation).ThenInclude(t=>t.IdPlanoNavigation).Include(t => t.IdTipoAcessoNavigation);
-            var db_aula_webContext = (from pro in _context.TbProfissional
-                                      where (Plano)pro.IdContratoNavigation.IdPlano == Plano.MedicoTotal
-                                      select new TbProfissionalDTO { 
-                                          IdProfissional =pro.IdProfissional,
-                                          Nome = pro.Nome,
-                                          NomeCidade = pro.IdCidadeNavigation.Nome,
-                                          NomePlano = pro.IdContratoNavigation.IdPlanoNavigation.Nome,
-                                          Cpf = pro.Cpf,
-                                          Especialidade = pro.Especialidade,
-                                          CrmCrn = pro.CrmCrn,
-                                          Logradouro = pro.Logradouro,
-                                          Numero = pro.Numero,
-                                          Cep = pro.Cep,
-                                          Ddd1 = pro.Ddd1,
-                                          Ddd2 = pro.Ddd2,
-                                          Telefone1 = pro.Telefone1,
-                                          Telefone2 = pro.Telefone2,
-                                          Salario = pro.Salario,
-                                      });
-            return View(db_aula_webContext);
+            if (User.IsInRole("GerenteGeral"))
+            {
+                var db_aula_webContext = (from pro in _context.TbProfissional
+                                          select new TbProfissionalDTO
+                                          {
+                                              IdProfissional = pro.IdProfissional,
+                                              Nome = pro.Nome,
+                                              NomeCidade = pro.IdCidadeNavigation.Nome,
+                                              NomePlano = pro.IdContratoNavigation.IdPlanoNavigation.Nome,
+                                              Cpf = pro.Cpf,
+                                              Especialidade = pro.Especialidade,
+                                              CrmCrn = pro.CrmCrn,
+                                              Logradouro = pro.Logradouro,
+                                              Numero = pro.Numero,
+                                              Cep = pro.Cep,
+                                              Ddd1 = pro.Ddd1,
+                                              Ddd2 = pro.Ddd2,
+                                              Telefone1 = pro.Telefone1,
+                                              Telefone2 = pro.Telefone2,
+                                              Salario = pro.Salario,
+                                          });
+                return View(db_aula_webContext);
+            }
+            else if (User.IsInRole("Medico") || User.IsInRole("Nutricionista"))
+            {
+                var userManager = HttpContext.RequestServices.GetService<UserManager<IdentityUser>>();
+                var user = await userManager.FindByEmailAsync(User.Identity?.Name);
+
+                var db_aula_webContext = (from pro in _context.TbProfissional
+                                          where pro.IdUser == user.Id
+                                          select new TbProfissionalDTO
+                                          {
+                                              IdProfissional = pro.IdProfissional,
+                                              Nome = pro.Nome,
+                                              NomeCidade = pro.IdCidadeNavigation.Nome,
+                                              NomePlano = pro.IdContratoNavigation.IdPlanoNavigation.Nome,
+                                              Cpf = pro.Cpf,
+                                              Especialidade = pro.Especialidade,
+                                              CrmCrn = pro.CrmCrn,
+                                              Logradouro = pro.Logradouro,
+                                              Numero = pro.Numero,
+                                              Cep = pro.Cep,
+                                              Ddd1 = pro.Ddd1,
+                                              Ddd2 = pro.Ddd2,
+                                              Telefone1 = pro.Telefone1,
+                                              Telefone2 = pro.Telefone2,
+                                              Salario = pro.Salario,
+                                          });
+                return View(db_aula_webContext);
+
+
+            }
+            else
+            {
+                var typePlano = User.IsInRole("GerenteMedico") ? Plano.MedicoTotal : Plano.Nutricionista;
+                //var db_aula_webContext = _context.TbProfissional.Include(t => t.IdCidadeNavigation).Include(t => t.IdContratoNavigation).ThenInclude(t=>t.IdPlanoNavigation).Include(t => t.IdTipoAcessoNavigation);
+                var db_aula_webContext = (from pro in _context.TbProfissional
+                                          where (Plano)pro.IdContratoNavigation.IdPlano == typePlano
+                                          select new TbProfissionalDTO
+                                          {
+                                              IdProfissional = pro.IdProfissional,
+                                              Nome = pro.Nome,
+                                              NomeCidade = pro.IdCidadeNavigation.Nome,
+                                              NomePlano = pro.IdContratoNavigation.IdPlanoNavigation.Nome,
+                                              Cpf = pro.Cpf,
+                                              Especialidade = pro.Especialidade,
+                                              CrmCrn = pro.CrmCrn,
+                                              Logradouro = pro.Logradouro,
+                                              Numero = pro.Numero,
+                                              Cep = pro.Cep,
+                                              Ddd1 = pro.Ddd1,
+                                              Ddd2 = pro.Ddd2,
+                                              Telefone1 = pro.Telefone1,
+                                              Telefone2 = pro.Telefone2,
+                                              Salario = pro.Salario,
+                                          });
+                return View(db_aula_webContext);
+            }
         }
 
         // GET: TbProfissionals/Details/5
@@ -65,6 +127,7 @@ namespace App_aula_1.Controllers
             var tbProfissional = await _context.TbProfissional
                 .Include(t => t.IdCidadeNavigation)
                 .Include(t => t.IdContratoNavigation)
+                .ThenInclude(p => p.IdPlanoNavigation)
                 .Include(t => t.IdTipoAcessoNavigation)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(m => m.IdProfissional == id);
@@ -77,7 +140,7 @@ namespace App_aula_1.Controllers
         }
 
         // GET: TbProfissionals/Create
-        [Authorize]
+        [Authorize(Roles = "GerenteGeral")]
         public IActionResult Create()
         {
             ViewData["IdCidade"] = new SelectList(_context.TbCidade, "IdCidade", "Nome");
@@ -91,6 +154,7 @@ namespace App_aula_1.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "GerenteGeral")]
         public async Task<IActionResult> Create([Bind("IdTipoProfissional,IdTipoAcesso,IdCidade,IdUser,Nome,Cpf,CrmCrn,Especialidade,Logradouro,Numero,Bairro,Cep,Ddd1,Ddd2,Telefone1,Telefone2,Salario")] TbProfissional tbProfissional, [Bind("IdPlano")] TbContrato IdContratoNavigation)
         {
             try
@@ -147,6 +211,7 @@ namespace App_aula_1.Controllers
         }
 
         // GET: TbProfissionals/Edit/5
+        [Authorize(Roles = "GerenteMedico, GerenteNutricionista, GerenteGeral, Medico, Nutricionista")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -155,13 +220,21 @@ namespace App_aula_1.Controllers
             }
 
             //var tbProfissional = await _context.TbProfissional.FindAsync(id);
-            var tbProfissional = await _context.TbProfissional.Include(t=>t.IdContratoNavigation).FirstOrDefaultAsync(s=>s.IdProfissional==id);
+            var tbProfissional = await _context.TbProfissional.Include(t => t.IdContratoNavigation).FirstOrDefaultAsync(s => s.IdProfissional == id);
             if (tbProfissional == null)
             {
                 return RedirectToAction("Erro", "Home");
             }
+            var plano1 = 1;
+            var plano2 = 2;
+
+            if (User.IsInRole("Nutricionista"))
+            {
+                plano1 = 3;
+                plano2 = 4;
+            }
             ViewData["IdCidade"] = new SelectList(_context.TbCidade, "IdCidade", "Nome", tbProfissional.IdCidade);
-            ViewData["IdPlano"] = new SelectList(_context.TbPlano, "IdPlano", "Nome", tbProfissional.IdContratoNavigation.IdPlano);
+            ViewData["IdPlano"] = new SelectList(_context.TbPlano.Where(p => p.IdPlano == plano1 || p.IdPlano == plano2), "IdPlano", "Nome", tbProfissional.IdContratoNavigation.IdPlano);
             ViewData["IdTipoAcesso"] = new SelectList(_context.TbTipoAcesso, "IdTipoAcesso", "Nome", tbProfissional.IdTipoAcesso);
             return View(tbProfissional);
         }
@@ -171,6 +244,7 @@ namespace App_aula_1.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost, ActionName("Edit")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "GerenteMedico, GerenteNutricionista, GerenteGeral, Medico, Nutricionista")]
         public async Task<IActionResult> EditPost(int? id)
         {
             if (id == null)
@@ -186,10 +260,10 @@ namespace App_aula_1.Controllers
             if (await TryUpdateModelAsync<TbProfissional>(
             tbProfissional,
             "",
-               s=> s.IdTipoProfissional, s => s.IdTipoAcesso, s => s.IdCidade, s => s.IdUser, s => s.Nome, s => s.Cpf,
+               s => s.IdTipoProfissional, s => s.IdTipoAcesso, s => s.IdCidade, s => s.IdUser, s => s.Nome, s => s.Cpf,
                s => s.CrmCrn, s => s.Especialidade, s => s.Logradouro,
                s => s.Numero, s => s.Bairro, s => s.Cep, s => s.Ddd1,
-               s => s.Ddd2, s => s.Telefone1,s => s.Telefone2, s => s.Salario))
+               s => s.Ddd2, s => s.Telefone1, s => s.Telefone2, s => s.Salario))
             {
                 try
                 {
@@ -208,6 +282,7 @@ namespace App_aula_1.Controllers
         }
 
         // GET: TbProfissionals/Delete/5
+        [Authorize(Roles = "GerenteMedico, GerenteNutricionista, GerenteGeral")]
         public async Task<IActionResult> Delete(int? id, bool? saveChangeError = false)
         {
             if (id == null)
@@ -238,16 +313,26 @@ namespace App_aula_1.Controllers
         // POST: TbProfissionals/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "GerenteMedico, GerenteNutricionista, GerenteGeral")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var tbProfissional = await _context.TbPaciente.FindAsync(id);
+            //var tbProfissional = await _context.TbProfissional.FindAsync(id);
+            var tbProfissional = await _context.TbProfissional.Include(p => p.TbMedicoPaciente).FirstOrDefaultAsync(p => p.IdProfissional == id);
+
             if (tbProfissional == null)
             {
                 return RedirectToAction(nameof(Index));
             }
+
+            if (tbProfissional.TbMedicoPaciente.Any())
+            {
+                ModelState.AddModelError("", "Não é possível excluir este profissional pois existem pacientes associados a ele.");
+                return View(tbProfissional);
+            }
+          
             try
             {
-                _context.TbPaciente.Remove(tbProfissional);
+                _context.TbProfissional.Remove(tbProfissional);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
